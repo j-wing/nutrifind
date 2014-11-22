@@ -26,7 +26,10 @@ TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+TEMPLATE_DIRS = (
+    os.path.join(BASE_DIR, 'nutrifind', 'templates'),
+    os.path.join(BASE_DIR, 'nutrifind', 'main', 'templates')
+)
 # Application definition
 
 INSTALLED_APPS = (

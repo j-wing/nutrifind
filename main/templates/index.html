@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+    <title>Example Domain</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+
+            $("form").first().submit(function(e) {
+                e.preventDefault();
+                $.get({
+                    url:$(e.target).attr("action"), 
+                    data:"url=" + $("[name=url]").first().val(),
+                    success:function(resp) {
+                    $.each(resp, function(index, val) {
+                        $("#names").html($("#names").html() + "<br />" + resp[val])
+                    });
+                });
+                return false;
+
+            })
+        });
+    </script>
+</head>
+
+<body>
+    <form action="/get_ingredients/" method="GET">
+        <input type="text" name="url" placeholder="Enter url." />
+    </form>
+</body>
+</html>
