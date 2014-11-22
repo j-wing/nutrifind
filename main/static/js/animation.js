@@ -1,4 +1,37 @@
+COLUMNS_LABELS = [
+    'name',
+    'water',
+    'calories',
+    'protein',
+    'total_fat',
+    'total_carbs',
+    'sugar_total', 
+    'calcium',
+    'iron',
+    'magnesium',
+    'phosphorous',
+    'potassium',
+    'sodium',
+    'zinc',
+    'vit_c',
+    'thiamin',
+    'vit_b6',
+    'folate_tot',
+    'folic_acid',
+    'vit_b12',
+    'vit_a',
+    'vit_e',
+    'vit_d',
+    'vit_k',
+    'sat_fat',
+    'mono_fat',
+    'poly_fat',
+    'cholesterol',
+]
+
+
 $(document).ready(function() {
+
 	$("#input-container").height(window.innerHeight);
 
 	$("form").first().submit(function(e) {
@@ -22,8 +55,14 @@ $(document).ready(function() {
 	  {url:$("[name=url]").first().val()},
 	  function(resp) {
 	  	showResults(resp);
-	    $.each(resp, function(index, val) {
-	      $("#result").html($("#result").html() + "<br />" + val['name'] + ": " + val['calories'])
+	    $.each(resp['results'], function(index, val) {
+	    	var s = "<br />" + val['name']  + ": <ul>"
+	    	$.each(COLUMNS_LABELS, function(i, col) {
+	    		s += "<li>" + col + ": " + val[col];
+	    		
+	    	})
+	    	s += "</ul>"
+	      $("#result").html($("#result").html() + s)
 	    });
 	});
 	return false;

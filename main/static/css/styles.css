@@ -160,12 +160,12 @@ Result Box
 	opacity:0;
 	background-color:white;
 	margin:0 auto;
-	height:300px;
+	height:800px;
 	width:80%;
 	display:none;
 	padding:50px;
 	font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
-
+	overflow:scroll;
 }
 
 

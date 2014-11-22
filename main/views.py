@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.conf import settings
 
-from main.models import Ingredient, fetch_nutrition_facts, get_data_from_string
+from main.models import Ingredient, fetch_ingredient, get_data_from_string
 
 
 def index(request):
@@ -25,23 +25,28 @@ def get_ingredients(request):
         return HttpResponse("Error: too many ingredients! (%s)" % nodes.len)
 
     result = []
+    unable_to_find = []
 
     for i in range(nodes.len):
         node = nodes[i]
         text = node.text()
 
-        name, ounces = get_data_from_string(text)
-        ingredients = Ingredient.objects.filter(name=name)
+        data = get_data_from_string(text)
+        if data is None:
+            unable_to_find.append(text)
+            continue
+
+        name, amount = data
+        ingredients = fetch_ingredient(name)
         if len(ingredients) == 0:
-            data = fetch_nutrition_facts(name)
-            ingredient = Ingredient.from_json(data)
-            ingredient.save()
+            unable_to_find.append(name)
+            continue
         else:
             ingredient = ingredients.first()
 
-        d = {'name':name, 'ounces':ounces}
-        d.update(ingredient.to_dict(ounces))
+        d = {'name':name, 'grams':amount}
+        d.update(ingredient.to_dict(amount))
         result.append(d)
 
 
-    return HttpResponse(json.dumps(result))
+    return HttpResponse(json.dumps({'results':result, 'failures':unable_to_find}))

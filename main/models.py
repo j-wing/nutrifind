@@ -1,25 +1,91 @@
 import re
-
-from django.db import models
-units = [
-    'fluid'
-    'ounces',
-    'ounce',
-    'oz',
-    'tbsp',
-    'tbsps',
-    'tsp',
-    'tsps',
-    'cup',
-    'cups',
+COLUMNS_LABELS = [
+    'ndb_num',
+    'name',
+    'water',
+    'calories',
+    'protein',
+    'total_fat',
+    'ash',
+    'total_carbs',
+    'fiber', 
+    'sugar_total', 
+    'calcium',
+    'iron',
+    'magnesium',
+    'phosphorous',
+    'potassium',
+    'sodium',
+    'zinc',
+    'copper',
+    'manganese',
+    'selenium',
+    'vit_c',
+    'thiamin',
+    'riboflavin',
+    'niacin',
+    'panto_acid',
+    'vit_b6',
+    'folate_tot',
+    'folic_acid',
+    'food_folate',
+    'folate_dfe',
+    'choline_tot',
+    'vit_b12',
+    'vit_a',
+    'vit_a_rae',
+    'retinol',
+    'alpha_carot',
+    'beta_carot',
+    'beta_crypt',
+    'lycopene',
+    'lutzea',
+    'vit_e',
+    'vit_d',
+    'vit_d_iu',
+    'vit_k',
+    'sat_fat',
+    'mono_fat',
+    'poly_fat',
+    'cholesterol',
 ]
 
-def fetch_nutrition_facts(name):
+from django.db import models
+units = {
+    'ounces':28.34,
+    'ounce':28.34,
+    'oz':28.34,
+    'tbsp':14.3,
+    'tbsps':14.3,
+    'tsp':4.76666666667,
+    'tsps':4.76666666667,
+    'cup':8*28.34,
+    'cups':8*28.34,
+}
+
+def fraction_to_float(amount_str):
+    r = r'([0-9]+)\/([0-9]+)'
+    match = re.match(r, amount_str)
+    if match is None:
+        return None
+
+    groups = match.groups()
+    num = groups[0]
+    denom = groups[1]
+    return float(num) / float(denom)
+
+def fetch_ingredient(name):
     """
         Returns the nutrition facts about an ingredient with name `name`
         as a dictionary.
     """
-    return {'name':name, 'calories':28, 'fat':1, 'carbs':3}
+    res = Ingredient.objects.filter(name__icontains=name).order_by('-preferred')
+    if len(res) == 0:
+        s = name.split(" ")
+        s.reverse()
+
+        res = Ingredient.objects.filter(name__icontains=",".join(s)).order_by('-preferred')
+    return res
 
 def get_data_from_string(string):
     """
@@ -31,22 +97,49 @@ def get_data_from_string(string):
         '1 cup flour' => ('flour', )
     """
 
-    amount_re = r'[\w\:\s]*([0-9]+[\/]?[0-9]*)\s([a-zA-Z\.]+)\s([a-zA-Z\.]+)\s'
+    amount_re = r'[\w\:\s]*([0-9]+[\/]?[0-9]*)\s([a-zA-Z\.]+)\s([a-zA-Z\.]+)'
     match = re.match(amount_re, string)
+
     if match is None:
         return None
 
     groups = match.groups()
-    amount = groups[0]
+    amount_str = groups[0]
     last_two = " ".join(groups[1:])
     if groups[1] in units:
         unit = groups[1]
+        name_start_index = 1
     elif last_two in units:
         unit = last_two
+        name_start_index = 2
     else:
         return None
 
-    return "Pan Galactic Gargle Blaster", 17
+    try:
+        amount = float(amount_str)
+    except ValueError:
+        amount = fraction_to_float(amount_str)
+        if amount is None:
+            return None
+
+    amount *= units[unit]
+    name_re = r'[\w\:\s]*([0-9]+[\/]?[0-9]*)(\s([a-zA-Z\.]+))+'
+    match = re.match(name_re, string)
+    if match is None:
+        return None
+    groups = match.groups()
+
+    words = groups[name_start_index:]
+
+    s = ' '.join(words[:2])
+    print amount, unit, words, s
+    results = fetch_ingredient(s)
+    if len(results) == 0:
+        s = words[0]
+    return s, amount
+
+
+
 
 # Create your models here.
 class Ingredient(models.Model):
@@ -101,6 +194,8 @@ class Ingredient(models.Model):
     poly_fat = models.FloatField(default=0.0)
     cholesterol = models.FloatField(default=0.0)
 
+    preferred = models.BooleanField(default=False)
+
     @classmethod
     def from_json(cls, data):
         obj = cls(name=data['name'], calories=data['calories'], total_fat=data['fat'], total_carbs=data['carbs'])
@@ -108,7 +203,7 @@ class Ingredient(models.Model):
 
     def to_dict(self, ounces):
         result = {}
-        for field in ['name', 'calories', 'total_fat', 'total_carbs']:
+        for field in COLUMNS_LABELS:
             result[field] = getattr(self, field)
             if type(result[field]) is int:
                 result[field] *= ounces
