@@ -1,31 +1,42 @@
 <!doctype html>
 <html>
 <head>
-    <title>Example Domain</title>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script type="text/javascript">
-        $(document).ready(function() {
+  <title>Example Domain</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 
-            $("form").first().submit(function(e) {
-                e.preventDefault();
-                $.get({
-                    url:$(e.target).attr("action"), 
-                    data:"url=" + $("[name=url]").first().val(),
-                    success:function(resp) {
-                    $.each(resp, function(index, val) {
-                        $("#names").html($("#names").html() + "<br />" + resp[val])
-                    });
-                });
-                return false;
+  <script src="{{STATIC_URL}}js/CSSPlugin.min.js"></script>
+  <script src="{{STATIC_URL}}js/EasePack.min.js"></script>
+  <script src="{{STATIC_URL}}js/TweenLite.min.js"></script>
+  <script src="{{STATIC_URL}}js/TweenMax.min.js"></script>
 
-            })
-        });
-    </script>
+  <script src="{{STATIC_URL}}js/animation.js"></script>
+
+
+  <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/styles.css" />
+
 </head>
 
 <body>
-    <form action="/get_ingredients/" method="GET">
-        <input type="text" name="url" placeholder="Enter url." />
+  <div id="error-msg">Please enter a valid url.</div>
+  <div id="input-container">
+    <form id="url-input" action="/get_ingredients/" method="GET">
+      <input id="url-text" type="text" name="url" placeholder="Enter url." />
+      <br />
+      <input id="url-submit" type="submit" value="submit" />
     </form>
+    <div id="black-box" class="vertical-align"></div>
+
+
+    <div id="progress-bar"></div>
+  </div>
+  <div id="result">
+  </div>
+
+
+</div>
+
+
+
+
 </body>
 </html>

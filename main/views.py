@@ -15,10 +15,8 @@ def names(request):
 def get_ingredients(request):
     url = request.GET.get("url")
     contents = urllib2.urlopen(url).read()
-    print "done yp"
     dom = htmldom.HtmlDom().createDom(contents)
     nodes = dom.find("[itemprop=ingredients]")
-    print "nodes"
 
     result = [nodes[i].text() for i in range(nodes.len)]
     return HttpResponse(json.dumps(result))
