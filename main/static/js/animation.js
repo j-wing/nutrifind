@@ -1,4 +1,6 @@
 $(document).ready(function() {
+	$("#input-container").height(window.innerHeight);
+
 	$("form").first().submit(function(e) {
 
 	e.preventDefault();
@@ -13,11 +15,13 @@ $(document).ready(function() {
 	$("#url-text").css("outline", "none");
 
 	doSubmitAnimation();
+
+	$("#result").css("display", "block");
 	$.getJSON(
-	  showResults();
 	  "/get_ingredients/",
 	  {url:$("[name=url]").first().val()},
 	  function(resp) {
+	  	showResults(resp);
 	    $.each(resp, function(index, val) {
 	      $("#result").html($("#result").html() + "<br />" + val)
 	    });
@@ -27,32 +31,6 @@ $(document).ready(function() {
 	});
 });
 
-
-// $(document).ready(function () {
-// 	$("#url-submit").click(function () {
-// 		var box_offset = $("#black-box").offset();
-// 		var submit_offset = $("#url-submit").offset();
-// 		var t1 = new TimelineLite();
-
-// 		var text_offset = $("#url-text").offset();
-
-// 		t1.to("#url-submit", .3, {
-// 			y: box_offset.top - submit_offset.top + $("#black-box").height() / 2,
-// 			width: 0,
-// 			height:0,
-// 			color:"transparent",
-// 			ease:Back.easeIn
-// 		})
-// 		.to("#url-text", .3, {
-// 			y: box_offset.top - text_offset.top + $("#black-box").height() / 2,
-// 			width: 0,
-// 			height:0,
-// 			color:"transparent",
-// 			ease:Back.easeIn
-// 		});
-// 	});
-// });
-
 function doSubmitAnimation() {
 	var box_offset = $("#black-box").offset();
 	var submit_offset = $("#url-submit").offset();
@@ -61,22 +39,30 @@ function doSubmitAnimation() {
 	var text_offset = $("#url-text").offset();
 
 	t1.to("#url-submit", .3, {
-		y: box_offset.top - submit_offset.top + $("#black-box").height() / 2,
+		top: 500,
+		left: submit_offset.left + 40,
 		width: 0,
 		height:0,
 		color:"transparent",
-		ease:Back.easeIn
+		ease:Back.easeIn,
+		opacity:0
 	})
 	.to("#url-text", .3, {
-		y: box_offset.top - text_offset.top + $("#black-box").height() / 2,
+		top: 500,
+		left: submit_offset.left + 40,
 		width: 0,
 		height:0,
 		color:"",
-		ease:Back.easeIn
+		ease:Back.easeIn,
+		opacity:0
 	});
 
+	TweenLite.to("#title", .5, {opacity:0, y:"-=50px", ease:Back.easeIn});
+
+	$("#progress-bar").css("display","block");
+
 	var t2 = new TimelineMax();
-	t2.to("#progress-bar", .5, {opacity:1});
+	t2.to("#progress-bar", .5, {opacity:1, y:"-=50px", ease:Back.easeIn});
 	t2.to("#progress-bar", 1, {rotationZ:-360, repeat:-1, ease:Linear.easeNone})
 }
 
@@ -94,7 +80,8 @@ function doError() {
 }
 
 function showResults() {
-	alert("HI GORDON!");
+	TweenLite.to("#progress-bar", .3, {y:"+=100px", ease:Back.easeIn, autoAlpha:0, display:"none"});
+	TweenLite.to("#result", .5, {opacity:1, y:"-=50px"});
 }
 
 

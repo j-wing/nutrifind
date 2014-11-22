@@ -75,8 +75,7 @@ Style Input Container
 
 #url-input {
 	border:1px solid red;
-	text-align:center;
-	position:relative;
+	/*text-align:center;*/
 	top:30%;
 }
 
@@ -87,6 +86,9 @@ Style Input Container
 	font-size:1.5em;
 	font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
 	font-weight: 300;
+	position:absolute;
+	top:250px;
+	left:calc(50% - 40%);
 }
 
 input:focus {
@@ -101,17 +103,19 @@ input:focus {
 	margin-top:20px;
 	height:40px;
 	width:100px;
-	background-color: #69FF2D;
+	background-color: #61D717;
 	color:white;
 	font-size:1em;
 	border:none;
 	border-radius:10px;
 	border-bottom:3px solid green;
+	position:absolute;
+	top:300px;
+	left: calc(50% - 50px);
 }
 
 #url-submit:active {
-	position:relative;
-	top:3px;
+	top:303px;
 	border-bottom:none;
 }
 
@@ -140,7 +144,7 @@ BLACK BOX!!!
 #black-box {
 	position:absolute;
 	left:calc(50% - 100px);
-	top:400px;
+	top:450px;
 	height:100px;
 	width:200px;
 	margin:0 auto;
@@ -148,24 +152,54 @@ BLACK BOX!!!
 	/*box-shadow:0 0 5px 0 black;*/
 }
 
+
+/* #####################
+Result Box
+##################### */
+#result {
+	opacity:0;
+	background-color:white;
+	margin:0 auto;
+	height:300px;
+	width:80%;
+	display:none;
+	padding:50px;
+	font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+
+}
+
+
 /* #####################
 Progress bar
 ##################### */
 #progress-bar {
+	position:absolute;
 	height:100px;
 	width:100px;
 	border-radius:50%;
 	background-color:white;
 	margin:0 auto;
-	position:relative;
-	top:200px;
+	left:calc(50% - 50px);
+	top:400px;
 	box-shadow: inset 5px 5px 10px #FF7700,
 					    inset 5px -5px 10px #00EBFF,
 					    inset -5px 5px 10px #FF0084,
 					    inset -5px -5px 10px #77FF00;
 	opacity:0;
+	display:none;
+	/*
+
 	border-bottom: 10px solid #00C4FF;
-	border-top: 10px solid #FF9100;
+	border-top: 10px solid #FF9100;*/
+}
+
+#title {
+	font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+	font-size:5em;
+	text-align:center;
+	position:relative;
+	top:70px;
+	letter-spacing: 3px;
 }
 
 
@@ -179,7 +213,15 @@ Disable Debugging Borders
 }
 
 
-
-
+/*#test {
+	height:500px;
+	width:500px;
+	z-index:999;
+	background-color:white;
+	color:black;
+	font-size:3em;
+	margin-top:500px;
+}
+*/
 
 

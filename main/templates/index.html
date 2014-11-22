@@ -11,6 +11,20 @@
 
   <script src="{{STATIC_URL}}js/animation.js"></script>
 
+  <!-- <script src="{{STATIC_URL}}js/mustache.js"></script>
+
+  // <script src="{{STATIC_URL}}js/render-table.js"></script> -->
+
+<!-- {% verbatim %}
+  <div id="template">
+    <table>
+      <tr>
+
+      </tr>
+    </table>
+  </div>
+{% endverbatim %} -->
+
 
   <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}css/styles.css" />
 
@@ -19,24 +33,18 @@
 <body>
   <div id="error-msg">Please enter a valid url.</div>
   <div id="input-container">
+    <div id="title">NutriFind</div>
     <form id="url-input" action="/get_ingredients/" method="GET">
       <input id="url-text" type="text" name="url" placeholder="Enter url." />
       <br />
       <input id="url-submit" type="submit" value="submit" />
     </form>
     <div id="black-box" class="vertical-align"></div>
-
-
+    <div id="result"></div>
     <div id="progress-bar"></div>
   </div>
-  <div id="result">
-  </div>
-
 
 </div>
-
-
-
 
 </body>
 </html>
