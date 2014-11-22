@@ -23,7 +23,7 @@ $(document).ready(function() {
 	  function(resp) {
 	  	showResults(resp);
 	    $.each(resp, function(index, val) {
-	      $("#result").html($("#result").html() + "<br />" + val)
+	      $("#result").html($("#result").html() + "<br />" + val['name'] + ": " + val['calories'])
 	    });
 	});
 	return false;
