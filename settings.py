@@ -30,6 +30,12 @@ TEMPLATE_DIRS = (
     os.path.join(BASE_DIR, 'nutrifind', 'templates'),
     os.path.join(BASE_DIR, 'nutrifind', 'main', 'templates')
 )
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'nutrifind', 'static'),
+    os.path.join(BASE_DIR, 'nutrifind', 'main', 'static')
+)
+
 # Application definition
 
 INSTALLED_APPS = (
