@@ -117,20 +117,15 @@ def fetch_ingredient(name):
     return res
 
 def get_data_from_recipe_name(string):
-    print("adsfafd")
     words = string.lower().split()
-    print("adsfafd")
     words.remove('recipe')
-    print("basdf")
     s = ' '.join(words)
     results = fetch_ingredient(s)
-    print("SDF")
     amount = 100
     # if results fetch fails, then try to find match among individual words
     if len(results) == 0:
         # filter words first
         words = filter_words(words)
-        print("words: {0}".format(words))
         total_results = []
         for word in words:
             results = fetch_ingredient(word)
@@ -158,7 +153,6 @@ def get_data_from_string(string):
         string = "1 " + string
     if string.find("OR") != -1:
         string = string[:string.find("OR")]
-    print(string)
     # parse units first
     string = " ".join(string.split())
     amount_re = r'[\w\:\s]*([0-9]+[\/]?[0-9]*)\s([a-zA-Z\.]+)\s([a-zA-Z\.]+)'
@@ -275,12 +269,12 @@ def filter_words(words):
         if word in ["half-n-half", "half-and-half"]:
             filtered += ["milk", "cream", "half", "half"]
         filtered.append(word)
-    filtered = " ".join(filtered)
-    comma_index = filtered.find(",")
-    filtered = filtered
-    if comma_index != -1:
-        filtered = filtered[:comma_index]
-    filtered = filtered.split()
+    # filtered = " ".join(filtered)
+    # comma_index = filtered.find(",")
+    # filtered = filtered
+    # if comma_index != -1:
+    #     filtered = filtered[:comma_index]
+    # filtered = filtered.split()
     # filtered = filtered.split(",")
     # filtered = " ".join(filtered).split()
     return filtered
