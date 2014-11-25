@@ -51,6 +51,9 @@ COLUMNS_LABELS = [
 ]
 
 from django.db import models
+
+#### NEED TO ADD SUPPORT FOR STATEMENTS LIKE:
+# '1 egg' and '1-2 cups flour' #
 units = {
     'fluid ounces':28.34,
     'fl oz':28.34,

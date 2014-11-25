@@ -31,23 +31,28 @@ def get_ingredients(request):
         node = nodes[i]
         text = node.text()
 
+        # if text is null (as in empty bullet point in ingredients)
+        # skip over it
+        if not text:
+            continue
+
         data = get_data_from_string(text)
         if data is None:
             unable_to_find.append(text)
             continue
 
         name, amount = data
-        ingredients = fetch_ingredient(name)
-        if len(ingredients) == 0:
-            unable_to_find.append(name)
-            continue
-        else:
-            ingredient = ingredients.first()
+        # ingredients = fetch_ingredient(name)
+        # if len(ingredients) == 0:
+        #     unable_to_find.append(name)
+        #     continue
+        # else:
+        #     ingredient = ingredients.first()
 
         # d = {'name':name, 'grams':amount}
         # d.update(ingredient.to_dict(amount))
         # result.append(d)
         result.append("{0} -> {1}".format(text, name))
 
-
+        print "success!"
     return HttpResponse(json.dumps({'results':result, 'failures':unable_to_find}))
