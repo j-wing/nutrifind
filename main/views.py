@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.conf import settings
 
-from main.models import Ingredient, fetch_ingredient, get_data_from_string
+from main.models import Ingredient, fetch_ingredient, get_data_from_string, get_data_from_recipe_name
 
 
 def index(request):
@@ -21,15 +21,30 @@ def get_ingredients(request):
     dom = htmldom.HtmlDom().createDom(contents)
     nodes = dom.find("[itemprop=ingredients]")
 
-    if nodes.len > 25:
-        return HttpResponse("Error: too many ingredients! (%s)" % nodes.len)
 
     result = []
     unable_to_find = []
 
+    # if the recipe title is already in our database...
+    # wait, this already seems flawed...
+    # recipe_name = dom.find("title")[0].text()
+    # data = get_data_from_recipe_name(recipe_name)
+
+    # if data:
+    #     name, amount = data
+    #     result.append("{0} -> {1}".format(recipe_name, name))
+    #     return HttpResponse(json.dumps({'results':result, 'failures':unable_to_find}))
+
+    if nodes.len == 0:
+        return HttpResponse("ERROR 1: could not parse ingredients")
+
+    if nodes.len > 25:
+        return HttpResponse("ERROR 2: too many ingredients! (%s)" % nodes.len)
+
     for i in range(nodes.len):
         node = nodes[i]
         text = node.text()
+        print(text)
 
         # if text is null (as in empty bullet point in ingredients)
         # skip over it

@@ -52,8 +52,11 @@ COLUMNS_LABELS = [
 
 from django.db import models
 
+#### SUGGESTION:  CHECK IF RECIPE NAME IS IN DATABASE FIRST ###
+
 #### NEED TO ADD SUPPORT FOR STATEMENTS LIKE:
 # '1 egg' and '1-2 cups flour' #
+# Egg weighs 57 ounces
 units = {
     'fluid ounces':28.34,
     'fl oz':28.34,
@@ -79,7 +82,10 @@ units = {
     'pints':16*28.34,
     'quart':32*28.34,
     'quarts':32*28.34,
-    'pinch':0.25
+    'pinch':0.25,
+    'egg':57, #as in '1 egg'
+    'piece':28, #as in piece of cake
+    'null':1
 }
 
 def fraction_to_float(amount_str):
@@ -110,6 +116,33 @@ def fetch_ingredient(name):
     print "res:\n{0}\n".format(res)
     return res
 
+def get_data_from_recipe_name(string):
+    print("adsfafd")
+    words = string.lower().split()
+    print("adsfafd")
+    words.remove('recipe')
+    print("basdf")
+    s = ' '.join(words)
+    results = fetch_ingredient(s)
+    print("SDF")
+    amount = 100
+    # if results fetch fails, then try to find match among individual words
+    if len(results) == 0:
+        # filter words first
+        words = filter_words(words)
+        print("words: {0}".format(words))
+        total_results = []
+        for word in words:
+            results = fetch_ingredient(word)
+            total_results += results
+        best_result = get_best_result(total_results, words)[0]
+        if best_result == None:
+            s = ""
+        else:
+            s = best_result.name
+    return s, amount
+
+
 def get_data_from_string(string):
     """
         Returns the name and number of ounces of an ingredient given a string from a recipe.
@@ -119,12 +152,15 @@ def get_data_from_string(string):
 
         '1 cup flour' => ('flour', )
     """
+    string = get_rid_of_comments(string)
+
     if string.split()[0] == "pinch":
         string = "1 " + string
     if string.find("OR") != -1:
         string = string[:string.find("OR")]
     print(string)
     # parse units first
+    string = " ".join(string.split())
     amount_re = r'[\w\:\s]*([0-9]+[\/]?[0-9]*)\s([a-zA-Z\.]+)\s([a-zA-Z\.]+)'
     match = re.match(amount_re, string)
 
@@ -136,6 +172,7 @@ def get_data_from_string(string):
         return None
 
     groups = match.groups()
+    print(groups)
     amount_str = groups[0]
     last_two = " ".join(groups[1:]) #units can be two words (fl oz)
     if groups[1] in units:
@@ -146,9 +183,11 @@ def get_data_from_string(string):
         unit = last_two
         name_start_index = 2
     else:
-        print("SFDFSF")
-        return None
+        name_start_index = -1
+        unit = 'null'
+        # return None
 
+    print(unit)
     if unit not in units.keys():
         return None
 
@@ -173,9 +212,9 @@ def get_data_from_string(string):
 
     # words = groups[name_start_index:]
 
-    string = get_rid_of_comments(string)
-
     words = string.split()[name_start_index+1:]
+    if unit == "egg":
+        words.append("egg")
 
     s = ' '.join(words)
     print amount, unit, words, s
@@ -205,23 +244,37 @@ def get_rid_of_comments(string):
             string = string[:start] + string[end+1:]
     return string
 
+def get_rid_of_all_words_after_comma(words):
+    result = []
+    for word in words:
+        result.append(word)
+        if ',' in word:
+            break
+    return result
+
 def filter_words(words):
     filtered = []
+    words = get_rid_of_all_words_after_comma(words)
     for word in words:
-        if word[0] == "(":
-            continue
+        print(word)
+        if ',' in word:
+            comma_index = word.find(',')
+            word = word[:comma_index] + word[comma_index+1:]
         if word in ("and", "or", "of", "if", "plus", "optional", "choice"):
             continue
-        if word in units.keys():
+        if word != "egg" and word in units.keys():
             continue
         if word.isdigit():
             continue
+        if isPlural(word):
+            filtered.append(getSingular(word))
         if word == "sugar":
             filtered.append("granulated")
         if word == "chocolate":
             filtered.append("sweet")
+        if word in ["half-n-half", "half-and-half"]:
+            filtered += ["milk", "cream", "half", "half"]
         filtered.append(word)
-
     filtered = " ".join(filtered)
     comma_index = filtered.find(",")
     filtered = filtered
@@ -231,6 +284,25 @@ def filter_words(words):
     # filtered = filtered.split(",")
     # filtered = " ".join(filtered).split()
     return filtered
+
+
+#### VERY RUDIMENTARY PLURAL CHECKING
+def isPlural(word):
+    if not word:
+        return False
+    last_index = len(word) - 1
+    if word[last_index] == "s":
+        return True
+    if word[last_index-1:] == "es":
+        return True
+    return False
+
+def getSingular(word):
+    last_index = len(word) - 1
+    if word[last_index] == "s":
+        return word[:last_index]
+    if word[last_index-1:] == "es":
+        return word[:last_index - 1]
 
 #filter "and" "or" and "of" from words
 
@@ -250,6 +322,8 @@ def get_best_result(results, words):
         for word in words:
             # split words in ingredient name
             word = word.lower()
+            if words_in_result[0] in words:
+                matching_words += 1
             if word in words_in_result:
                 if word[len(word)-2:] == "ed":
                     matching_words += 1
