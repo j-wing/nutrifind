@@ -44,9 +44,10 @@ def get_ingredients(request):
         else:
             ingredient = ingredients.first()
 
-        d = {'name':name, 'grams':amount}
-        d.update(ingredient.to_dict(amount))
-        result.append(d)
+        # d = {'name':name, 'grams':amount}
+        # d.update(ingredient.to_dict(amount))
+        # result.append(d)
+        result.append("{0} -> {1}".format(text, name))
 
 
     return HttpResponse(json.dumps({'results':result, 'failures':unable_to_find}))

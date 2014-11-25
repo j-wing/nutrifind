@@ -5,7 +5,7 @@ COLUMNS_LABELS = [
     'protein',
     'total_fat',
     'total_carbs',
-    'sugar_total', 
+    'sugar_total',
     'calcium',
     'iron',
     'magnesium',
@@ -56,12 +56,13 @@ $(document).ready(function() {
 	  function(resp) {
 	  	showResults(resp);
 	    $.each(resp['results'], function(index, val) {
-	    	var s = "<br />" + val['name']  + ": <ul>"
-	    	$.each(COLUMNS_LABELS, function(i, col) {
-	    		s += "<li>" + col + ": " + val[col];
-	    		
-	    	})
-	    	s += "</ul>"
+	    	// var s = "<br />" + val['name']  + ": <ul>"
+	    	// $.each(COLUMNS_LABELS, function(i, col) {
+	    	// 	s += "<li>" + col + ": " + val[col];
+
+	    	// })
+	    	// s += "</ul>"
+	    	var s = "<br />" + val + "<br />"
 	      $("#result").html($("#result").html() + s)
 	    });
 	});
