@@ -8,8 +8,8 @@ COLUMNS_LABELS = [
     'total_fat',
     'ash',
     'total_carbs',
-    'fiber', 
-    'sugar_total', 
+    'fiber',
+    'sugar_total',
     'calcium',
     'iron',
     'magnesium',
@@ -51,16 +51,41 @@ COLUMNS_LABELS = [
 ]
 
 from django.db import models
+
+#### SUGGESTION:  CHECK IF RECIPE NAME IS IN DATABASE FIRST ###
+
+#### NEED TO ADD SUPPORT FOR STATEMENTS LIKE:
+# '1 egg' and '1-2 cups flour' #
+# Egg weighs 57 ounces
 units = {
+    'fluid ounces':28.34,
+    'fl oz':28.34,
     'ounces':28.34,
     'ounce':28.34,
+    'pound':453.592,
+    'pounds':453.592,
+    'clove':3.5,
+    'cloves':3.5,
     'oz':28.34,
     'tbsp':14.3,
     'tbsps':14.3,
+    'T':14.3,
+    'tablespoon':14.3,
+    'tablespoons':14.3,
     'tsp':4.76666666667,
     'tsps':4.76666666667,
+    'teaspoon':4.76666666667,
+    'teaspoons':4.76666666667,
     'cup':8*28.34,
     'cups':8*28.34,
+    'pint':16*28.34,
+    'pints':16*28.34,
+    'quart':32*28.34,
+    'quarts':32*28.34,
+    'pinch':0.25,
+    'egg':57, #as in '1 egg'
+    'piece':28, #as in piece of cake
+    'null':1
 }
 
 def fraction_to_float(amount_str):
@@ -79,13 +104,39 @@ def fetch_ingredient(name):
         Returns the nutrition facts about an ingredient with name `name`
         as a dictionary.
     """
+    print(name)
     res = Ingredient.objects.filter(name__icontains=name).order_by('-preferred')
+    print(res)
     if len(res) == 0:
         s = name.split(" ")
         s.reverse()
+        print "s:{0}\n\n".format(s)
 
         res = Ingredient.objects.filter(name__icontains=",".join(s)).order_by('-preferred')
+    print "res:\n{0}\n".format(res)
     return res
+
+def get_data_from_recipe_name(string):
+    words = string.lower().split()
+    words.remove('recipe')
+    s = ' '.join(words)
+    results = fetch_ingredient(s)
+    amount = 100
+    # if results fetch fails, then try to find match among individual words
+    if len(results) == 0:
+        # filter words first
+        words = filter_words(words)
+        total_results = []
+        for word in words:
+            results = fetch_ingredient(word)
+            total_results += results
+        best_result = get_best_result(total_results, words)[0]
+        if best_result == None:
+            s = ""
+        else:
+            s = best_result.name
+    return s, amount
+
 
 def get_data_from_string(string):
     """
@@ -96,49 +147,210 @@ def get_data_from_string(string):
 
         '1 cup flour' => ('flour', )
     """
+    string = get_rid_of_comments(string)
 
+    if string.split()[0] == "pinch":
+        string = "1 " + string
+    if string.find("OR") != -1:
+        string = string[:string.find("OR")]
+    # parse units first
+    string = " ".join(string.split())
     amount_re = r'[\w\:\s]*([0-9]+[\/]?[0-9]*)\s([a-zA-Z\.]+)\s([a-zA-Z\.]+)'
     match = re.match(amount_re, string)
 
+    ### Need to fix recipe lines with "2-3" ingredients
+
     if match is None:
+
+        print("aaaa!")
         return None
 
     groups = match.groups()
+    print(groups)
     amount_str = groups[0]
-    last_two = " ".join(groups[1:])
+    last_two = " ".join(groups[1:]) #units can be two words (fl oz)
     if groups[1] in units:
+        print("badsfad")
         unit = groups[1]
         name_start_index = 1
     elif last_two in units:
         unit = last_two
         name_start_index = 2
     else:
+        name_start_index = -1
+        unit = 'null'
+        # return None
+
+    print(unit)
+    if unit not in units.keys():
         return None
 
+    print("made it!")
+
+    # parse number of units
     try:
         amount = float(amount_str)
     except ValueError:
         amount = fraction_to_float(amount_str)
         if amount is None:
             return None
-
     amount *= units[unit]
-    name_re = r'[\w\:\s]*([0-9]+[\/]?[0-9]*)(\s([a-zA-Z\.]+))+'
-    match = re.match(name_re, string)
-    if match is None:
-        return None
-    groups = match.groups()
 
-    words = groups[name_start_index:]
+    # parse ingredient name
+    # name_re = r'[\w\:\s]*([0-9]+[\/]?[0-9]*)(\s([a-zA-Z\.]+))+'
+    # match = re.match(name_re, string)
+    # if match is None:
+    #     return None
+    # groups = match.groups()
+    # print "groups:{0}".format(groups)
 
-    s = ' '.join(words[:2])
+    # words = groups[name_start_index:]
+
+    words = string.split()[name_start_index+1:]
+    if unit == "egg":
+        words.append("egg")
+
+    s = ' '.join(words)
     print amount, unit, words, s
     results = fetch_ingredient(s)
+    # if results fetch fails, then try to find match among individual words
     if len(results) == 0:
-        s = words[0]
+        # filter words first
+        words = filter_words(words)
+        print("words: {0}".format(words))
+        total_results = []
+        for word in words:
+            results = fetch_ingredient(word)
+            total_results += results
+        best_result = get_best_result(total_results, words)[0]
+        if best_result == None:
+            s = ""
+        else:
+            s = best_result.name
     return s, amount
 
+def get_rid_of_comments(string):
+    """ COMMENTS (parantheticals) ARE STUPID """
+    while string.find('(') != -1:
+        start = string.find('(')
+        end = string.find(')')
+        if end != -1:
+            string = string[:start] + string[end+1:]
+    return string
 
+def get_rid_of_all_words_after_comma(words):
+    result = []
+    for word in words:
+        result.append(word)
+        if ',' in word:
+            break
+    return result
+
+def filter_words(words):
+    filtered = []
+    words = get_rid_of_all_words_after_comma(words)
+    for word in words:
+        print(word)
+        if ',' in word:
+            comma_index = word.find(',')
+            word = word[:comma_index] + word[comma_index+1:]
+        if word in ("and", "or", "of", "if", "plus", "optional", "choice"):
+            continue
+        if word != "egg" and word in units.keys():
+            continue
+        if word.isdigit():
+            continue
+        if isPlural(word):
+            filtered.append(getSingular(word))
+        if word == "sugar":
+            filtered.append("granulated")
+        if word == "chocolate":
+            filtered.append("sweet")
+        if word in ["half-n-half", "half-and-half"]:
+            filtered += ["milk", "cream", "half", "half"]
+        filtered.append(word)
+    # filtered = " ".join(filtered)
+    # comma_index = filtered.find(",")
+    # filtered = filtered
+    # if comma_index != -1:
+    #     filtered = filtered[:comma_index]
+    # filtered = filtered.split()
+    # filtered = filtered.split(",")
+    # filtered = " ".join(filtered).split()
+    return filtered
+
+
+#### VERY RUDIMENTARY PLURAL CHECKING
+def isPlural(word):
+    if not word:
+        return False
+    last_index = len(word) - 1
+    if word[last_index] == "s":
+        return True
+    if word[last_index-1:] == "es":
+        return True
+    return False
+
+def getSingular(word):
+    last_index = len(word) - 1
+    if word[last_index] == "s":
+        return word[:last_index]
+    if word[last_index-1:] == "es":
+        return word[:last_index - 1]
+
+#filter "and" "or" and "of" from words
+
+# filter results to choose one that contains most of the other words
+# takes in list of results (ingredients) and all other words, and returns
+# the result most likely fitting the recipe ingredient name
+def get_best_result(results, words):
+    print("/// Calling Best result ///")
+    best_match = None
+    most_matching_words = -1
+    for result in results:
+        matching_words = 0 #keep track of how many words are in result name
+
+        words_in_result = filter_result_words(result)
+        print(words_in_result, words)
+        matches = []
+        for word in words:
+            # split words in ingredient name
+            word = word.lower()
+            if words_in_result[0] in words:
+                matching_words += 1
+            if word in words_in_result:
+                if word[len(word)-2:] == "ed":
+                    matching_words += 1
+                else:
+                    matching_words += 2
+
+                # elif len(words_in_result) > len(words):
+                #     matching_words += 1
+
+                matches.append(word)
+        # print(matching_words, most_matching_words)
+        if matching_words >= most_matching_words:
+            print("## new best:{0}, {1}".format(result, matches))
+            best_match = result
+            most_matching_words = matching_words
+    return best_match, most_matching_words
+
+def filter_result_words(result):
+    result_words = " ".join(result.name.lower().split(",")).split()
+    filtered = []
+    i = 0
+    while i < len(result_words):
+        word = result_words[i]
+        if word == "no":
+            word = "no " + result_words[i+1:i+2][0]
+            i += 1
+        if word == "pdr":
+            word = "powder"
+        if word == "sugars":
+            word = "sugar"
+        filtered.append(word)
+        i += 1
+    return filtered
 
 
 # Create your models here.
@@ -211,3 +423,5 @@ class Ingredient(models.Model):
 
     def __unicode__(self):
         return self.name
+
+

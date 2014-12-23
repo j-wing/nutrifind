@@ -10,8 +10,8 @@ COLUMNS_LABELS = [
     'total_fat',
     'ash',
     'total_carbs',
-    'fiber', 
-    'sugar_total', 
+    'fiber',
+    'sugar_total',
     'calcium',
     'iron',
     'magnesium',
@@ -82,8 +82,6 @@ def handle_line(line):
         res[name] = columns[index]
     return res
 
-
-
 def main(filename):
     if not filename.startswith("/"):
         filename = os.path.join(os.path.dirname(__file__), filename)
@@ -96,7 +94,7 @@ def main(filename):
             try:
                 d = handle_line(line)
                 ing = Ingredient(**d)
-                ing.save()  
+                ing.save()
             except Exception as e:
                 print "Encountered exception with:", d['name']
                 print e
